@@ -176,6 +176,34 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 24px 30px; }
 .import-btn input { display: none; }
 .io-note { color: var(--good); font-size: 14px; }
 .result-line { color: var(--muted); font-size: 14px; margin: 14px 0 4px; }
+/* ---------- next up strip ---------- */
+.next-up {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px 12px;
+  width: 100%;
+  margin: 10px 0 2px;
+  padding: 11px 15px;
+  font: inherit;
+  text-align: left;
+  color: var(--text);
+  background: linear-gradient(90deg, rgba(255, 140, 66, 0.16), rgba(229, 72, 140, 0.10));
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+.next-up[hidden] { display: none; }
+.next-up:hover { border-color: var(--accent-soft); }
+.next-up-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+.next-up-name { font-weight: 650; font-size: 16px; }
+.next-up-detail { color: var(--muted); font-size: 14px; }
 /* ---------- tracker layout ---------- */
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 20px; align-items: start; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }

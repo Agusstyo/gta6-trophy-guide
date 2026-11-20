@@ -169,6 +169,43 @@ function renderList() {
       : `${shown.length} of 55 trophies match.`;
 }
 
+/* ---------- next up: the counter closest to its target ---------- */
+// A hunt stalls when everything left feels equally far away, so the tracker
+// names the one counter trophy nearest its PlayStation target and offers it
+// as the next job. Clicking the strip opens that trophy's guide.
+const nextUpEl = document.getElementById('next-up');
+
+function closestCounter() {
+  let best = null;
+  for (const t of trophies) {
+    if (!t.target || isEarned(t.id)) continue;
+    const done = countOf(t);
+    if (done <= 0 || done >= t.target) continue;
+    if (!best || done / t.target > countOf(best) / best.target) best = t;
+  }
+  return best;
+}
+
+function renderNextUp() {
+  const t = closestCounter();
+  if (!t) {
+    nextUpEl.hidden = true;
+    nextUpEl.replaceChildren();
+    nextUpEl.onclick = null;
+    return;
+  }
+  const done = countOf(t);
+  const pct = Math.floor((done / t.target) * 100);
+  nextUpEl.replaceChildren(
+    el('span', 'next-up-label', 'Next up'),
+    el('span', 'next-up-name', t.name),
+    el('span', 'next-up-detail',
+      `${fmt(done)} of ${fmt(t.target)} ${t.targetLabel} — ${pct}% there, ${fmt(t.target - done)} to go. Open its guide.`),
+  );
+  nextUpEl.hidden = false;
+  nextUpEl.onclick = () => selectTrophy(t.id);
+}
+
 function toggleEarned(id, on) {
   const set = earnedSet();
   if (on) set.add(id); else set.delete(id);
@@ -417,6 +454,7 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 function refresh() {
   renderHeader();
   renderList();
+  renderNextUp();
   renderPane();
   renderRoadmap();
   renderWatch();

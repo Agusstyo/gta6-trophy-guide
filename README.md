@@ -10,6 +10,7 @@ A free, open-source trophy guide and tracker for Grand Theft Auto VI on PlayStat
 
 - **Tracker** — a checklist of all 55 trophies with the official name, description and grade for each. Ticks are saved in the browser (localStorage), and progress can be **exported to and imported from a JSON file**, so a hunt survives a cleared cache or a new machine.
 - **Numeric progress** — where PlayStation publishes a target (250 stunts, 42 shooting-range golds, $250,000 laundered, 500 choices…), the tracker keeps a counter with a progress bar, so part-way progress is never lost.
+- **Next up** — a strip at the top of the tracker names the counter trophy closest to its target (with its percentage and how much is left) and opens that trophy's guide on click, so the next job to grind is always one glance away.
 - **Filters and search** — by grade, by kind (story, strangers, activities, collectibles & exploration, crime & combat, partner, money & property, moments), by status, or by text.
 - **Spoiler protection** — story trophies' names and descriptions stay hidden until you earn them, so the tracker can sit open from day one without spoiling the game.
 - **A guide for every trophy** — click any trophy for its full guide: what to do, a missable note, its progress target, and its sources. Every guide is written for this page, in our own words, from the official trophy descriptions.
