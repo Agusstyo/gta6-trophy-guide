@@ -1,7 +1,9 @@
 // Leonida Legend — an offline GTA VI trophy guide and tracker.
 // All 55 official trophies with a checklist that saves in the browser, numeric
 // counters for the trophies PlayStation gives a target, filters, search, a
-// spoiler setting, export/import, a staged roadmap and a missables watch list.
+// spoiler setting, export/import, a "what next" planner ranked from your own
+// progress, a notes field of your own in every guide, two looks (night and
+// paper), a staged roadmap and a missables watch list.
 // It loads exactly one file besides itself: data/trophies.json, from its own
 // folder. Nothing is fetched from the network, ever.
 
@@ -15,14 +17,23 @@ const state = loadState();
 let selectedId = null;
 
 function loadState() {
-  const fresh = { earned: [], counts: {}, spoilers: true };
+  const fresh = { earned: [], counts: {}, spoilers: true, notes: {}, theme: 'dark' };
   try {
     const raw = JSON.parse(localStorage.getItem(STORE_KEY) ?? 'null');
     if (!raw || typeof raw !== 'object') return fresh;
+    const notes = {};
+    if (raw.notes && typeof raw.notes === 'object') {
+      for (const [k, v] of Object.entries(raw.notes)) {
+        const id = Number(k);
+        if (byId.has(id) && typeof v === 'string' && v.trim()) notes[id] = v;
+      }
+    }
     return {
       earned: Array.isArray(raw.earned) ? raw.earned.filter((id) => byId.has(id)) : [],
       counts: raw.counts && typeof raw.counts === 'object' ? raw.counts : {},
       spoilers: raw.spoilers !== false,
+      notes,
+      theme: raw.theme === 'paper' ? 'paper' : 'dark',
     };
   } catch {
     return fresh;
@@ -38,6 +49,16 @@ const isEarned = (id) => earnedSet().has(id);
 const countOf = (t) => Math.max(0, Number(state.counts[t.id] ?? 0) || 0);
 const isHidden = (t) => state.spoilers && t.spoiler && !isEarned(t.id);
 const fmt = (n) => n.toLocaleString('en-US');
+const hasNote = (t) => Boolean(state.notes[t.id]?.trim());
+
+/* ---------- the two looks: night and paper ---------- */
+// The whole palette lives in CSS variables; the theme is one attribute on
+// the root element plus the choice remembered with the rest of the state.
+function applyTheme() {
+  document.documentElement.dataset.theme = state.theme === 'paper' ? 'paper' : 'dark';
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = state.theme === 'paper' ? 'Night look' : 'Paper look';
+}
 
 function el(tag, cls, text) {
   const node = document.createElement(tag);
@@ -57,6 +78,7 @@ function chipsFor(t) {
   wrap.append(el('span', 'chip grade', t.grade));
   wrap.append(el('span', 'chip', t.kind));
   if (t.missable === 'watch') wrap.append(el('span', 'chip watch', 'Watch list'));
+  if (hasNote(t)) wrap.append(el('span', 'chip noted', 'Has your notes'));
   if (isEarned(t.id)) wrap.append(el('span', 'chip done', 'Earned'));
   else if (t.target && countOf(t) >= t.target) wrap.append(el('span', 'chip done', 'Target reached'));
   return wrap;
@@ -214,6 +236,114 @@ function toggleEarned(id, on) {
   refresh();
 }
 
+/* ---------- the planner: what to chase next ---------- */
+// The strip names one counter; the planner ranks the whole hunt. Three
+// groups, in the order a player should care about them: counters already in
+// reach of their PlayStation target, the watch-list trophies whose one-off
+// moments are worth meeting prepared, and the quick wins — unearned,
+// spoiler-free trophies the data rates as a single short job (the "effort"
+// field is this guide's own estimate, not an official figure). Rebuilt on
+// every refresh, so it answers the progress as it stands right now.
+const EFFORT_PHRASE = {
+  quick: 'rated a quick one — a single short job',
+  steady: 'rated a solid session of work',
+  long: 'rated a long haul',
+};
+
+function plannerGroups() {
+  const open = trophies.filter((t) => !isEarned(t.id) && !isHidden(t));
+  const used = new Set();
+  const groups = [];
+  const take = (list) => list.filter((t) => {
+    if (used.has(t.id)) return false;
+    used.add(t.id);
+    return true;
+  });
+
+  const counters = take(open.filter((t) => t.target).sort((a, b) => {
+    const byFraction = (countOf(b) / b.target) - (countOf(a) / a.target);
+    return byFraction !== 0 ? byFraction : (a.target - countOf(a)) - (b.target - countOf(b));
+  }));
+  if (counters.length) {
+    groups.push({
+      title: 'Finish a counter',
+      intro: 'Counters you can close out, nearest their PlayStation target first.',
+      items: counters.map((t) => {
+        const done = countOf(t);
+        const left = t.target - done;
+        return {
+          t,
+          reason: done > 0
+            ? `${fmt(done)} of ${fmt(t.target)} ${t.targetLabel} — ${Math.floor((done / t.target) * 100)}% there, ${fmt(left)} to go.`
+            : `Not started: ${fmt(t.target)} ${t.targetLabel} ahead of you, best paced a few at a time alongside everything else.`,
+          badge: `${fmt(left)} left`,
+        };
+      }),
+    });
+  }
+
+  const watched = take(open.filter((t) => t.missable === 'watch'));
+  if (watched.length) {
+    groups.push({
+      title: 'Mind the one-off moments',
+      intro: 'Watch-list trophies still unearned. None is confirmed missable — but each has the shape of a single chance, so meet it prepared rather than by accident.',
+      items: watched.map((t) => ({ t, reason: t.missableNote, badge: 'Watch list' })),
+    });
+  }
+
+  const quick = take(open.filter((t) => !t.spoiler && t.effort === 'quick'));
+  if (quick.length) {
+    groups.push({
+      title: 'Quick wins',
+      intro: 'Unearned and spoiler-free, each one a single short job — the names to clear when a session is brief.',
+      items: quick.map((t) => ({
+        t,
+        reason: `${t.description} ${EFFORT_PHRASE[t.effort] ? `(${EFFORT_PHRASE[t.effort]})` : ''}`,
+        badge: t.kind,
+      })),
+    });
+  }
+  return groups;
+}
+
+function renderPlanner() {
+  const wrap = document.getElementById('planner-groups');
+  const groups = plannerGroups();
+  const total = groups.reduce((n, g) => n + g.items.length, 0);
+  document.getElementById('plan-count').textContent = String(total);
+  wrap.replaceChildren();
+  if (!groups.length) {
+    const done = trophies.every((t) => isEarned(t.id));
+    wrap.append(el('p', 'plan-empty', done
+      ? 'Nothing left to plan: every trophy is earned, and the platinum is yours. Leonida Legend salutes you.'
+      : 'Nothing to rank right now — what remains is story trophies sitting behind spoiler protection. Earn one, or turn spoiler protection off, and the planner will pick the hunt back up.'));
+    return;
+  }
+  for (const g of groups) {
+    const box = el('section', 'plan-group');
+    box.append(el('h3', '', g.title));
+    box.append(el('p', 'plan-intro', g.intro));
+    const list = el('ol', 'trophy-list');
+    for (const item of g.items) {
+      const li = el('li', 'card plan-item');
+      li.append(medal(item.t.grade));
+      const main = el('div', 'card-main');
+      main.append(el('div', 'card-name', item.t.name));
+      main.append(el('p', 'plan-reason', item.reason));
+      main.append(chipsFor(item.t));
+      li.append(main);
+      li.append(el('span', 'plan-badge', item.badge));
+      li.addEventListener('click', () => {
+        switchView('tracker');
+        selectTrophy(item.t.id);
+      });
+      list.append(li);
+    }
+    box.append(list);
+    wrap.append(box);
+  }
+}
+
 /* ---------- guide pane ---------- */
 const paneBody = document.getElementById('pane-body');
 const paneEmpty = document.getElementById('pane-empty');
@@ -264,6 +394,21 @@ function renderPane() {
   }
   paneBody.append(el('h3', '', 'Sources'));
   paneBody.append(el('p', 'sources', t.sources));
+  paneBody.append(el('h3', '', 'Your notes'));
+  paneBody.append(el('p', 'pane-note-hint', 'Yours alone: where you left a counter, what worked, what to try next. Saved with your progress in this browser, and carried in the export file.'));
+  const noteArea = document.createElement('textarea');
+  noteArea.className = 'pane-notes';
+  noteArea.rows = 4;
+  noteArea.placeholder = 'Write your notes for this trophy here…';
+  noteArea.value = state.notes[t.id] ?? '';
+  noteArea.setAttribute('aria-label', `Your notes for ${t.name}`);
+  noteArea.addEventListener('input', () => {
+    if (noteArea.value.trim()) state.notes[t.id] = noteArea.value;
+    else delete state.notes[t.id];
+    saveState();
+  });
+  noteArea.addEventListener('change', renderList);
+  paneBody.append(noteArea);
   const earn = el('label', 'pane-earn');
   const box = document.createElement('input');
   box.type = 'checkbox';
@@ -396,7 +541,10 @@ document.getElementById('export-btn').addEventListener('click', () => {
     earnedIds: [...state.earned],
     counts: Object.fromEntries(Object.entries(state.counts).map(([id, n]) => [byId.get(Number(id))?.name ?? id, n])),
     countIds: state.counts,
+    notes: Object.fromEntries(Object.entries(state.notes).map(([id, text]) => [byId.get(Number(id))?.name ?? id, text])),
+    noteIds: state.notes,
     spoilers: state.spoilers,
+    theme: state.theme,
   };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
@@ -415,6 +563,7 @@ document.getElementById('import-file').addEventListener('change', async (ev) => 
     const nameToId = new Map(trophies.map((t) => [t.name, t.id]));
     let earned = [];
     let counts = {};
+    let notes = {};
     if (Array.isArray(parsed)) {
       // A plain list of trophy names (the shape simple checklists export).
       earned = parsed.map((n) => nameToId.get(n)).filter((id) => id !== undefined);
@@ -428,23 +577,34 @@ document.getElementById('import-file').addEventListener('change', async (ev) => 
           if (id !== undefined && Number.isFinite(Number(v))) counts[id] = Math.max(0, Math.floor(Number(v)));
         }
       }
+      const rawNotes = parsed.noteIds && typeof parsed.noteIds === 'object' ? parsed.noteIds : parsed.notes;
+      if (rawNotes && typeof rawNotes === 'object') {
+        for (const [k, v] of Object.entries(rawNotes)) {
+          const id = byId.has(Number(k)) ? Number(k) : nameToId.get(k);
+          if (id !== undefined && typeof v === 'string' && v.trim()) notes[id] = v;
+        }
+      }
       if (typeof parsed.spoilers === 'boolean') state.spoilers = parsed.spoilers;
+      if (parsed.theme === 'paper' || parsed.theme === 'dark') state.theme = parsed.theme;
     }
     state.earned = [...new Set(earned)];
     state.counts = counts;
+    state.notes = notes;
     saveState();
     syncControls();
+    applyTheme();
     refresh();
-    note(`Imported: ${state.earned.length} trophies marked earned.`);
+    note(`Imported: ${state.earned.length} trophies marked earned${Object.keys(notes).length ? `, ${Object.keys(notes).length} with notes` : ''}.`);
   } catch {
     note('That file could not be read as progress JSON.');
   }
 });
 
 document.getElementById('reset-btn').addEventListener('click', () => {
-  if (!confirm('Clear every tick and counter in this tracker? This cannot be undone.')) return;
+  if (!confirm('Clear every tick, counter and note in this tracker? This cannot be undone.')) return;
   state.earned = [];
   state.counts = {};
+  state.notes = {};
   saveState();
   refresh();
   note('Progress reset.');
@@ -456,6 +616,7 @@ function refresh() {
   renderList();
   renderNextUp();
   renderPane();
+  renderPlanner();
   renderRoadmap();
   renderWatch();
 }
@@ -480,8 +641,14 @@ document.getElementById('spoiler-toggle').addEventListener('change', (ev) => {
   saveState();
   refresh();
 });
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  state.theme = state.theme === 'paper' ? 'dark' : 'paper';
+  saveState();
+  applyTheme();
+});
 
+applyTheme();
 syncControls();
 refresh();
-const startView = ['roadmap', 'missables'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'tracker';
+const startView = ['planner', 'roadmap', 'missables'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'tracker';
 switchView(startView);

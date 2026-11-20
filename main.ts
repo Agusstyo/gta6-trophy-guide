@@ -18,7 +18,7 @@
 // Rehearse it locally with:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-frontend.ts';
@@ -79,12 +79,23 @@ const dossier = buildDossier(outputDir, GATE_CAPS);
 writeFileSync(join(outputDir, 'dossier.json'), dossier);
 
 // A short summary for whoever ran this, so a rehearsal shows at a glance
-// that the hand-in is complete: what was copied, and the dossier's size.
+// that the hand-in is complete: what was copied, how many trophies the
+// copied guide data actually carries (read back from the output folder, so
+// a truncated data file would show up here as a short count), and the
+// dossier's size.
 const appTally = tally(join(outputDir, 'app'));
 const shotTally = tally(join(outputDir, 'screenshots'));
 const kib = (n) => `${(n / 1024).toFixed(1)} KiB`;
+let trophyCount = 'unreadable';
+try {
+  const guideData = JSON.parse(readFileSync(join(outputDir, 'app', 'data', 'trophies.json'), 'utf8'));
+  trophyCount = String(guideData.trophies.length);
+} catch {
+  // Leave the marker: the summary then says plainly that the data did not parse.
+}
 console.log('Leonida Legend — hand-in assembled:');
 console.log(`  app/:         ${appTally.files} files, ${kib(appTally.bytes)}`);
+console.log(`  trophies:     ${trophyCount} in the guide data`);
 console.log(`  screenshots/: ${shotTally ? shotTally.files : 0} files, ${shotTally ? kib(shotTally.bytes) : '0 KiB'}`);
 console.log(`  dossier.json: ${kib(Buffer.byteLength(dossier))}`);
 console.log(`  output:       ${outputDir}`);

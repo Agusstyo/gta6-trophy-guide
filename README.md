@@ -11,6 +11,9 @@ A free, open-source trophy guide and tracker for Grand Theft Auto VI on PlayStat
 - **Tracker** — a checklist of all 55 trophies with the official name, description and grade for each. Ticks are saved in the browser (localStorage), and progress can be **exported to and imported from a JSON file**, so a hunt survives a cleared cache or a new machine.
 - **Numeric progress** — where PlayStation publishes a target (250 stunts, 42 shooting-range golds, $250,000 laundered, 500 choices…), the tracker keeps a counter with a progress bar, so part-way progress is never lost.
 - **Next up** — a strip at the top of the tracker names the counter trophy closest to its target (with its percentage and how much is left) and opens that trophy's guide on click, so the next job to grind is always one glance away.
+- **Planner** — a full "what next" view that ranks the whole hunt from your saved progress: counters nearest their PlayStation target first (with the exact count left), then the watch-list trophies still unearned, then the quick wins — unearned, spoiler-free trophies rated as a single short job. It rebuilds itself every time you tick a trophy or move a counter, and every row opens that trophy's guide.
+- **Your own notes** — every guide pane carries a notes field of your own: where you left a counter, what worked, what to try next. Notes save with your progress in the browser and travel inside the export/import JSON, and a trophy with notes wears a chip in the list so you can find it again.
+- **Two looks** — the dark "night in Leonida" and a light paper look, switched from the tab row and remembered with the rest of your state.
 - **Filters and search** — by grade, by kind (story, strangers, activities, collectibles & exploration, crime & combat, partner, money & property, moments), by status, or by text.
 - **Spoiler protection** — story trophies' names and descriptions stay hidden until you earn them, so the tracker can sit open from day one without spoiling the game.
 - **A guide for every trophy** — click any trophy for its full guide: what to do, a missable note, its progress target, and its sources. Every guide is written for this page, in our own words, from the official trophy descriptions.
@@ -40,9 +43,9 @@ node main.ts             # writes to /output, or $MAKEFUN_OUTPUT_DIR
 ## Layout
 
 - `app/index.html`, `app/app.js`, `app/style.css` — the whole app: no build step, no dependencies, system fonts only, medal swatches drawn in CSS.
-- `app/data/trophies.json` — the official list plus, per trophy: kind, spoiler flag, progress target, missable flag/note, the full guide, and its sources.
+- `app/data/trophies.json` — the official list plus, per trophy: kind, spoiler flag, progress target, missable flag/note, an effort estimate the planner ranks by (this project's own judgement, not an official figure), the full guide, and its sources.
 - `main.ts` / `vendor/makefun-frontend.ts` — the hand-in program and the vendored dossier library (the scorer's own copy; left byte-for-byte as shipped).
-- `screenshots/` — four screens of the app with a hunt in progress (13 of 55 earned, spoiler protection on).
+- `screenshots/` — four screens of the app with a hunt in progress (13 of 55 earned, spoiler protection on): the tracker, a guide pane with the reader's own notes, the roadmap, and the planner.
 
 Leonida Legend is a fan-made tool. It is not affiliated with Rockstar Games or Take-Two Interactive, and it uses no Rockstar artwork, logos or assets. MIT licensed — see `LICENSE`.
 

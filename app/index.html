@@ -29,8 +29,10 @@
 
 <nav class="tabs" aria-label="Views">
   <button type="button" class="tab active" data-view="tracker">Tracker</button>
+  <button type="button" class="tab" data-view="planner">Planner <span class="pill" id="plan-count">0</span></button>
   <button type="button" class="tab" data-view="roadmap">Roadmap to the platinum</button>
   <button type="button" class="tab" data-view="missables">Missables watch list <span class="pill" id="watch-count">7</span></button>
+  <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch between the night look and the paper look">Paper look</button>
 </nav>
 
 <main>
@@ -78,10 +80,19 @@
           <h2>Pick a trophy</h2>
           <p>Select any trophy in the list to read its full guide here: what to do, whether it can be missed, its progress target where PlayStation publishes one, and the sources the guide rests on.</p>
           <p>Guides are our own words, written from the official trophy descriptions. Where a description does not pin a detail down, the guide says so instead of inventing one.</p>
+          <p>Each guide pane also keeps a notes field of your own — jot down where you left a counter, which car you used, anything — saved with your progress and carried in the export file.</p>
         </div>
         <article id="pane-body" hidden></article>
       </aside>
     </div>
+  </section>
+
+  <section id="view-planner" class="view">
+    <div class="prose">
+      <h2>What next? The planner</h2>
+      <p>A hunt stalls when everything left looks equally far away, so the planner ranks the open trophies for you, from your own saved progress. Counters you have started come first, nearest their PlayStation target at the top, with exactly how much is left. Then the watch-list trophies still unearned, because a one-off moment is worth meeting prepared rather than by accident. Then the quick wins — unearned, spoiler-free trophies the guide rates as a single short job. The list rebuilds itself every time you tick a trophy or move a counter, and every row opens that trophy's guide.</p>
+    </div>
+    <div id="planner-groups"></div>
   </section>
 
   <section id="view-roadmap" class="view">
