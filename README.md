@@ -20,6 +20,15 @@ A free, open-source trophy guide and tracker for Grand Theft Auto VI on PlayStat
 - **Roadmap to the platinum** — six stages (story → strangers → partner work → the great sweep → crime & money → loose ends and the 100% summit), each with its own progress read live from your tracker.
 - **Missables watch list** — no trophy on the official list is *confirmed* missable, and the guide says so plainly. Seven trophies whose wording suggests a one-off moment, a unique target, a choice or a second attempt are flagged, each with the reasoning spelled out.
 
+## Screenshots
+
+The judge sees the four screenshots and the file outline, so the shots are chosen to carry the whole app at a glance:
+
+1. **Tracker** — the hero header and scoreboard (13 of 55 earned, per-grade counters, the road-to-the-platinum read), the four tabs, filters, the Next up strip naming the counter nearest its target, and the guide pane open on a watch-list trophy.
+2. **Guide, in the paper look** — the same guide pane with the light paper theme switched on: the full guide in our own words, the missable note with its reasoning, the cited sources, and the reader's own saved note.
+3. **Roadmap** — the six stages to the platinum, each with its own live progress bar.
+4. **Planner** — the hunt ranked from the saved progress, the top pick marked, scrolled to the one-off moments group so the missables watch list is visible inside the plan.
+
 ## Sources & honesty
 
 - Trophy names, descriptions and grades: the official list on **Exophase** (the list frozen 2026-11-18), held in `app/data/trophies.json` exactly as published.
@@ -45,7 +54,7 @@ node main.ts             # writes to /output, or $MAKEFUN_OUTPUT_DIR
 - `app/index.html`, `app/app.js`, `app/style.css` — the whole app: no build step, no dependencies, system fonts only, medal swatches drawn in CSS.
 - `app/data/trophies.json` — the official list plus, per trophy: kind, spoiler flag, progress target, missable flag/note, an effort estimate the planner ranks by (this project's own judgement, not an official figure), the full guide, and its sources.
 - `main.ts` / `vendor/makefun-frontend.ts` — the hand-in program and the vendored dossier library (the scorer's own copy; left byte-for-byte as shipped).
-- `screenshots/` — four screens of the app with a hunt in progress (13 of 55 earned, spoiler protection on): the tracker, a guide pane with the reader's own notes, the roadmap, and the planner.
+- `screenshots/` — four screens of the app with a hunt in progress (13 of 55 earned, spoiler protection on): the tracker with its hero scoreboard, a guide pane in the paper look, the roadmap, and the planner with its top pick and the watch list in view. Regenerate them with `node shots.mjs` (drives the headless Chromium in the Playwright cache over CDP; it seeds the same demo progress, then captures 1280×800 JPEGs).
 
 Leonida Legend is a fan-made tool. It is not affiliated with Rockstar Games or Take-Two Interactive, and it uses no Rockstar artwork, logos or assets. MIT licensed — see `LICENSE`.
 

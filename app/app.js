@@ -91,6 +91,10 @@ function renderHeader() {
   const bar = document.getElementById('overall-bar');
   bar.setAttribute('aria-valuenow', String(earned.size));
   document.getElementById('overall-fill').style.width = `${(earned.size / trophies.length) * 100}%`;
+  // A plain-language read of the same number, so the scoreboard says at a
+  // glance how far along the road to the platinum the hunt actually is.
+  document.getElementById('overall-pct').textContent =
+    `${Math.round((earned.size / trophies.length) * 100)}% of the road to the platinum`;
   for (const g of GRADES) {
     const all = trophies.filter((t) => t.grade === g);
     const got = all.filter((t) => earned.has(t.id)).length;
@@ -324,14 +328,20 @@ function renderPlanner() {
     box.append(el('h3', '', g.title));
     box.append(el('p', 'plan-intro', g.intro));
     const list = el('ol', 'trophy-list');
-    for (const item of g.items) {
+    for (const [ii, item] of g.items.entries()) {
       const li = el('li', 'card plan-item');
+      // The single best next job gets a visible top-pick mark, so the
+      // planner's first row reads as a recommendation, not just a list.
+      if (g.title === 'Finish a counter' && ii === 0) {
+        li.classList.add('plan-top');
+      }
       li.append(medal(item.t.grade));
       const main = el('div', 'card-main');
       main.append(el('div', 'card-name', item.t.name));
       main.append(el('p', 'plan-reason', item.reason));
       main.append(chipsFor(item.t));
       li.append(main);
+      if (li.classList.contains('plan-top')) li.append(el('span', 'plan-top-label', 'Top pick'));
       li.append(el('span', 'plan-badge', item.badge));
       li.addEventListener('click', () => {
         switchView('tracker');

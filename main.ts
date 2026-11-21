@@ -86,6 +86,18 @@ writeFileSync(join(outputDir, 'dossier.json'), dossier);
 const appTally = tally(join(outputDir, 'app'));
 const shotTally = tally(join(outputDir, 'screenshots'));
 const kib = (n) => `${(n / 1024).toFixed(1)} KiB`;
+// Name every screenshot and its size, and say plainly if any of them is over
+// the gate's 256 KiB cap — a shot the scorer would refuse should never slip
+// through a rehearsal unnoticed.
+let shotLines = [];
+try {
+  for (const name of readdirSync(join(outputDir, 'screenshots')).sort()) {
+    const size = statSync(join(outputDir, 'screenshots', name)).size;
+    shotLines.push(`    ${name} ${kib(size)}${size > GATE_CAPS.screenshots.max_bytes ? ' — OVER THE 256 KiB CAP' : ''}`);
+  }
+} catch {
+  shotLines = ['    (no screenshots folder)'];
+}
 let trophyCount = 'unreadable';
 try {
   const guideData = JSON.parse(readFileSync(join(outputDir, 'app', 'data', 'trophies.json'), 'utf8'));
@@ -97,5 +109,6 @@ console.log('Leonida Legend — hand-in assembled:');
 console.log(`  app/:         ${appTally.files} files, ${kib(appTally.bytes)}`);
 console.log(`  trophies:     ${trophyCount} in the guide data`);
 console.log(`  screenshots/: ${shotTally ? shotTally.files : 0} files, ${shotTally ? kib(shotTally.bytes) : '0 KiB'}`);
+for (const line of shotLines) console.log(line);
 console.log(`  dossier.json: ${kib(Buffer.byteLength(dossier))}`);
 console.log(`  output:       ${outputDir}`);

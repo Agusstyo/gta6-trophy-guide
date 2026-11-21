@@ -51,7 +51,7 @@ body {
   line-height: 1.5;
 }
 .sunset {
-  height: 6px;
+  height: 8px;
   background: linear-gradient(90deg, #ffd166 0%, #ff8c42 22%, #ff6b4a 45%, #e5488c 72%, #6d5df0 100%);
 }
 /* ---------- masthead ---------- */
@@ -63,6 +63,9 @@ body {
   max-width: 1240px;
   margin: 0 auto;
   padding: 30px 24px 8px;
+  /* A faint sunset glow behind the hero, so the title reads as a cover
+     rather than a bare heading; it fades out before the tabs. */
+  background: radial-gradient(720px 190px at 18% 0%, rgba(255, 140, 66, 0.14), rgba(229, 72, 140, 0.05) 55%, transparent 75%);
 }
 .masthead-text { flex: 1 1 480px; }
 .kicker {
@@ -81,13 +84,25 @@ h1 {
   line-height: 1.05;
 }
 .tagline { margin: 12px 0 0; color: var(--muted); max-width: 56ch; }
+.hero-goal { margin: 10px 0 0; color: var(--text); font-family: var(--serif); font-size: 18px; }
+.hero-goal em { color: var(--accent-soft); font-style: normal; font-weight: 600; }
 .scoreboard {
   flex: 0 1 340px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 18px 20px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
 }
+.score-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+.pct { margin: 8px 0 12px; color: var(--muted); font-size: 14px; }
 .big-count { font-family: var(--serif); font-size: 40px; line-height: 1; }
 .big-count .of { font-size: 19px; color: var(--muted); }
 .bar {
@@ -252,7 +267,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 24px 30px; }
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 13px 15px;
+  padding: 14px 16px;
   cursor: pointer;
 }
 .card:hover { border-color: #3c4763; }
@@ -262,7 +277,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 24px 30px; }
 .card .tick input { width: 21px; height: 21px; accent-color: var(--good); cursor: pointer; }
 .card .medal { margin-top: 3px; }
 .card-main { flex: 1 1 auto; min-width: 0; }
-.card-name { font-weight: 650; font-size: 16.5px; }
+.card-name { font-weight: 650; font-size: 17px; }
 .card.earned .card-name { color: var(--accent-soft); }
 .card-desc { color: var(--muted); font-size: 14.5px; margin-top: 1px; }
 .card.hidden-trophy .card-name, .card.hidden-trophy .card-desc { color: var(--muted); font-style: italic; }
@@ -318,7 +333,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 24px 30px; }
   max-height: calc(100vh - 32px);
   overflow: auto;
 }
-.pane-empty h2, .guide-pane h2 { font-family: var(--serif); font-size: 25px; margin: 2px 0 8px; line-height: 1.2; }
+.pane-empty h2, .guide-pane h2 { font-family: var(--serif); font-size: 26px; margin: 2px 0 8px; line-height: 1.2; }
 .pane-empty p { color: var(--muted); }
 .pane-head { display: flex; gap: 13px; align-items: flex-start; }
 .pane-head .medal { margin-top: 5px; }
@@ -409,6 +424,24 @@ main { max-width: 1240px; margin: 0 auto; padding: 0 24px 30px; }
   font-weight: 650;
   color: var(--accent-soft);
   border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+/* The planner's single best next job: an accent frame and a filled mark, so
+   the recommendation jumps out of the list at a glance. */
+.plan-top { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--panel-2); }
+.plan-top-label {
+  flex: none;
+  align-self: flex-start;
+  margin-left: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1d1405;
+  background: var(--warn);
+  border: 1px solid var(--warn);
   border-radius: 20px;
   padding: 2px 10px;
   white-space: nowrap;
